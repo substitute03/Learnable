@@ -1,0 +1,11 @@
+## Interface: 20501
+## Title: Learnable
+## Version : 1.0.0
+## Notes: 
+## Author: substitute03
+## SavedVariables: AbilitiesDb
+## OptionalDeps: Ace3
+## X-Embeds: Ace3
+
+Abilities.lua
+Learnable.lua
