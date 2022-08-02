@@ -13,10 +13,25 @@ end
 function PrintSpells(level)
     local _, playerClass = UnitClass("player") -- The 2nd return value is the locale-independent, uppercase class name of the current player.
     local _, playerRace = UnitRace("player") -- The 2nd return value is the locale-independent, uppercase race name of the current player.
+    local _, playerFaction = UnitFactionGroup("player")
     local learnableSpellsIds = {}
 
     if playerClass == "MAGE" then
         for key, spellId in pairs(MAGE[level]) do
+            table.insert(learnableSpellsIds, spellId)
+        end
+        if playerFaction == "Horde" then
+            for key, spellId in pairs(MAGE_HORDE[level]) do
+                table.insert(learnableSpellsIds, spellId)
+            end
+        end
+        if playerFaction == "Alliance" then
+            for key, spellId in pairs(MAGE_ALLIANCE[level]) do
+                table.insert(learnableSpellsIds, spellId)
+            end
+        end
+    elseif playerClass == "HUNTER" then
+        for key, spellId in pairs(HUNTER[level]) do
             table.insert(learnableSpellsIds, spellId)
         end
     elseif playerClass == "PALADIN" then
@@ -78,10 +93,10 @@ function PrintSpells(level)
         print(" ")
         print("[Learnable] Spells available to train at level " .. level .. ":")
         print("====================")
-        for i = 1 , #learnableSpellsIds, 1 do
+        for i = 1, #learnableSpellsIds, 1 do
             local spellName = GetSpellInfo(learnableSpellsIds[i])
             print("- ", spellName)
-        end   
+        end
         print("====================")
     else
         print("No new learnable spells for a ", playerClass, " at level ", level, ".")
