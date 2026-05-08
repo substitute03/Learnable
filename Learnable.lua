@@ -1,5 +1,6 @@
 SLASH_LEARNABLE1 = "/learnable"
 SLASH_LEARNABLE2 = "/learn"
+local pendingRankRetryByLevel = {}
 
 SlashCmdList["LEARNABLE"] = function(arg1)
     local level = tonumber(arg1)
@@ -14,7 +15,7 @@ function OnLevelUpEventHandler(self, event, ...)
     PrintSpells(playerLevel)
 end
 
-function PrintSpells(level)
+function PrintSpells(level, isRetry)
     local _, playerClass = UnitClass("player") -- The 2nd return value is the locale-independent, uppercase class name of the current player.
     local _, playerRace = UnitRace("player") -- The 2nd return value is the locale-independent, uppercase race name of the current player.
     local _, playerFaction = UnitFactionGroup("player")
@@ -124,19 +125,36 @@ function PrintSpells(level)
     end
 
     if #learnableSpellsIds > 0 then
-        print(" ")
-        print("[Learnable] Spells available to train at level " .. level .. ":")
-        print("====================")
+        local spellLines = {}
+        local hasPendingSpellData = false
         for i = 1, #learnableSpellsIds, 1 do
             local spellId = learnableSpellsIds[i]
             local spellInfo = C_Spell.GetSpellInfo(spellId)
             local spellName = spellInfo and spellInfo.name
             local spellRank = C_Spell.GetSpellSubtext and C_Spell.GetSpellSubtext(spellId) or nil
-            if spellRank and spellRank ~= "" then
-                print("- " .. spellName .. " (" .. spellRank .. ")")
-            else
-                print("- ", spellName)
+            if (spellRank == nil or spellRank == "") and C_Spell.RequestLoadSpellData then
+                C_Spell.RequestLoadSpellData(spellId)
+                hasPendingSpellData = true
             end
+            if spellRank and spellRank ~= "" then
+                table.insert(spellLines, "- " .. spellName .. " (" .. spellRank .. ")")
+            else
+                table.insert(spellLines, "- " .. spellName)
+            end
+        end
+        if hasPendingSpellData and not isRetry and not pendingRankRetryByLevel[level] then
+            pendingRankRetryByLevel[level] = true
+            C_Timer.After(0.2, function()
+                pendingRankRetryByLevel[level] = nil
+                PrintSpells(level, true)
+            end)
+            return
+        end
+        print(" ")
+        print("[Learnable] Spells available to train at level " .. level .. ":")
+        print("====================")
+        for i = 1, #spellLines, 1 do
+            print(spellLines[i])
         end
         print("====================")
     else
