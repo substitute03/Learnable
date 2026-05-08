@@ -8,6 +8,7 @@ local startLevelInput
 local endLevelInput
 local unlearnedOnlyCheck
 local scrollChild
+local headerRow
 local rows = {}
 
 local function GetClassHeader()
@@ -34,8 +35,9 @@ local function EnsureResultRow(index)
         row.icon:SetPoint("LEFT", 4, 0)
 
         row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        row.text:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
+        row.text:SetPoint("LEFT", 82, 0)
         row.text:SetJustifyH("LEFT")
+        row.text:SetWidth(588)
 
         row:EnableMouse(true)
         row:SetScript("OnEnter", function(self)
@@ -158,6 +160,22 @@ function Addon.EnsureWindow()
     scrollChild = CreateFrame("Frame", nil, scrollFrame)
     scrollChild:SetSize(1, 1)
     scrollFrame:SetScrollChild(scrollChild)
+
+    headerRow = CreateFrame("Frame", nil, scrollChild)
+    headerRow:SetSize(680, 20)
+    headerRow:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 6, -6)
+
+    headerRow.iconText = headerRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    headerRow.iconText:SetPoint("LEFT", 4, 0)
+    headerRow.iconText:SetText("")
+
+    headerRow.levelText = headerRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    headerRow.levelText:SetPoint("LEFT", 34, 0)
+    headerRow.levelText:SetText("Level")
+
+    headerRow.spellText = headerRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    headerRow.spellText:SetPoint("LEFT", 82, 0)
+    headerRow.spellText:SetText("Ability")
 end
 
 function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
@@ -192,15 +210,20 @@ function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
 
     if #spellEntries == 0 then
         local row = EnsureResultRow(1)
-        row:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 6, -6)
+        row:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 6, -30)
         row:SetSize(680, 24)
         row.spellId = nil
         row.icon:Hide()
+        row.levelText = row.levelText or row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        row.levelText:SetPoint("LEFT", 34, 0)
+        row.levelText:SetWidth(40)
+        row.levelText:SetJustifyH("CENTER")
+        row.levelText:SetText("")
         row.text:ClearAllPoints()
-        row.text:SetPoint("LEFT", 0, 0)
+        row.text:SetPoint("LEFT", 82, 0)
         row.text:SetText("No learnable spells in this range.")
         row:Show()
-        scrollChild:SetHeight(30)
+        scrollChild:SetHeight(54)
         learnableWindow:Show()
         return
     end
@@ -208,21 +231,28 @@ function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
     for i = 1, #spellEntries, 1 do
         local entry = spellEntries[i]
         local row = EnsureResultRow(i)
+        row.levelText = row.levelText or row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        row.levelText:SetPoint("LEFT", 34, 0)
+        row.levelText:SetWidth(40)
+        row.levelText:SetJustifyH("CENTER")
 
-        row:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 6, -6 - ((i - 1) * 24))
+        row:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 6, -30 - ((i - 1) * 24))
         row.spellId = entry.spellId
         row.icon:Show()
+        row.icon:SetPoint("LEFT", 4, 0)
+        row.levelText:SetText(tostring(entry.level))
         row.text:ClearAllPoints()
-        row.text:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
+        row.text:SetPoint("LEFT", 82, 0)
+        row.text:SetWidth(588)
         row.icon:SetTexture(entry.icon)
         if entry.rank and entry.rank ~= "" then
-            row.text:SetText(entry.level .. " - " .. entry.name .. " (" .. entry.rank .. ")")
+            row.text:SetText(entry.name .. " (" .. entry.rank .. ")")
         else
-            row.text:SetText(entry.level .. " - " .. entry.name)
+            row.text:SetText(entry.name)
         end
         row:Show()
     end
 
-    scrollChild:SetHeight((#spellEntries * 24) + 12)
+    scrollChild:SetHeight((#spellEntries * 24) + 36)
     learnableWindow:Show()
 end
