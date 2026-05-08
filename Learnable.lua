@@ -132,7 +132,7 @@ function PrintSpells(level)
             local spellName = spellInfo and spellInfo.name
             local spellRank = C_Spell.GetSpellSubtext and C_Spell.GetSpellSubtext(spellId) or nil
             if spellRank and spellRank ~= "" then
-                print("- ", spellName, "(",spellRank,")")
+                print("- " .. spellName .. " (" .. spellRank .. ")")
             else
                 print("- ", spellName)
             end
