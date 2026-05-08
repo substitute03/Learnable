@@ -1,4 +1,4 @@
-## Interface: 20501
+## Interface: 120001,11508,50503,20505
 ## Title: Learnable
 ## Version : 1.0.0
 ## Notes: 
