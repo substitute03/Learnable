@@ -87,6 +87,36 @@ function PrintSpells(level)
                 table.insert(learnableSpellsIds, spellId)
             end
         end
+    elseif playerClass == "WARLOCK" then
+        for key, spellId in pairs(WARLOCK[level]) do
+            table.insert(learnableSpellsIds, spellId)
+        end
+    elseif playerClass == "ROGUE" then
+        for key, spellId in pairs(ROGUE[level]) do
+            table.insert(learnableSpellsIds, spellId)
+        end
+    elseif playerClass == "SHAMAN" then
+        for key, spellId in pairs(SHAMAN[level]) do
+            table.insert(learnableSpellsIds, spellId)
+        end
+        if playerFaction == "Horde" then
+            for key, spellId in pairs(SHAMAN_HORDE[level]) do
+                table.insert(learnableSpellsIds, spellId)
+            end
+        end
+        if playerFaction == "Alliance" then
+            for key, spellId in pairs(SHAMAN_ALLIANCE[level]) do
+                table.insert(learnableSpellsIds, spellId)
+            end
+        end
+    elseif playerClass == "WARRIOR" then
+        for key, spellId in pairs(WARRIOR[level]) do
+            table.insert(learnableSpellsIds, spellId)
+        end
+    elseif playerClass == "DRUID" then
+        for key, spellId in pairs(DRUID[level]) do
+            table.insert(learnableSpellsIds, spellId)
+        end
     end
 
     if #learnableSpellsIds > 0 then
