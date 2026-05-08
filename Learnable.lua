@@ -252,7 +252,7 @@ function PrintSpells(level, isRetry)
         end
         print(DIVIDER)
     else
-        print(C_HEADER .. "No new learnable spells for a " .. playerClass .. " at level " .. level .. "." .. C_RESET)
+        print(C_HEADER .. "[Learnable] No new learnable spells for a " .. playerClass .. " at level " .. level .. "." .. C_RESET)
     end
 end
 
