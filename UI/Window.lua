@@ -78,6 +78,20 @@ function Addon.EnsureWindow()
     learnableWindow:SetScript("OnDragStop", learnableWindow.StopMovingOrSizing)
     learnableWindow:Hide()
 
+    local specialFrames = rawget(_G, "UISpecialFrames")
+    if specialFrames then
+        local found = false
+        for i = 1, #specialFrames, 1 do
+            if specialFrames[i] == "LearnableWindow" then
+                found = true
+                break
+            end
+        end
+        if not found then
+            table.insert(specialFrames, "LearnableWindow")
+        end
+    end
+
     learnableWindow.TitleText:SetText("Learnable")
 
     classIconTexture = learnableWindow:CreateTexture(nil, "ARTWORK")

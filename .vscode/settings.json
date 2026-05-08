@@ -32,6 +32,7 @@
         "ColorPickerFrame",
         "OKAY",
         "NOT_BOUND",
-        "CLASS_ICON_TCOORDS"
+        "CLASS_ICON_TCOORDS",
+        "UISpecialFrames"
     ]
 }
