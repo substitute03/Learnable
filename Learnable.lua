@@ -2,6 +2,9 @@ SLASH_LEARNABLE1 = "/learnable"
 
 SlashCmdList["LEARNABLE"] = function(arg1)
     local level = tonumber(arg1)
+    if level == nil then
+        level = UnitLevel("player")
+    end
     PrintSpells(level)
 end
 
@@ -124,8 +127,15 @@ function PrintSpells(level)
         print("[Learnable] Spells available to train at level " .. level .. ":")
         print("====================")
         for i = 1, #learnableSpellsIds, 1 do
-            local spellName = GetSpellInfo(learnableSpellsIds[i])
-            print("- ", spellName)
+            local spellId = learnableSpellsIds[i]
+            local spellInfo = C_Spell.GetSpellInfo(spellId)
+            local spellName = spellInfo and spellInfo.name
+            local spellRank = C_Spell.GetSpellSubtext and C_Spell.GetSpellSubtext(spellId) or nil
+            if spellRank and spellRank ~= "" then
+                print("- ", spellName, "(",spellRank,")")
+            else
+                print("- ", spellName)
+            end
         end
         print("====================")
     else
