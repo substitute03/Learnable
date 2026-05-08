@@ -18,7 +18,8 @@ SlashCmdList["LEARNABLE"] = function(arg1)
     local maxLevel = Addon.MAX_LEVEL or 70
 
     if input == "" then
-        Addon.ShowSpellRange(playerLevel, maxLevel)
+        Addon.showUnlearnedOnly = true
+        Addon.ShowSpellRange(1, maxLevel)
         return
     end
 
