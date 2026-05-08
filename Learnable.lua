@@ -210,7 +210,7 @@ function PrintSpellRange(startLevel, endLevel, isRetry)
         end
         print(DIVIDER)
     else
-        print(C_HEADER .. "No new learnable spells for a " .. playerClass .. " between levels " .. startLevel .. "-" .. endLevel .. "." .. C_RESET)
+        print(C_HEADER .. "[Learnable]No new learnable spells for a " .. playerClass .. " between levels " .. startLevel .. "-" .. endLevel .. "." .. C_RESET)
     end
 end
 
