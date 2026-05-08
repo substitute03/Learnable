@@ -2,6 +2,14 @@ SLASH_LEARNABLE1 = "/learnable"
 SLASH_LEARNABLE2 = "/learn"
 local pendingRankRetryByLevel = {}
 local pendingRankRetryByRange = {}
+local C_HEADER = "|cffFFD100"
+local C_DIV = "|cff666666"
+local C_LEVEL = "|cff87CEFA"
+local C_NAME = "|cffFFFFFF"
+local C_RANK = "|cff33FF99"
+local C_RESET = "|r"
+local BULLET = "•"
+local DIVIDER = C_DIV .. "------------------------------" .. C_RESET
 
 SlashCmdList["LEARNABLE"] = function(arg1)
     local input = (arg1 or ""):lower():match("^%s*(.-)%s*$")
@@ -36,7 +44,7 @@ SlashCmdList["LEARNABLE"] = function(arg1)
 
     local level = tonumber(input)
     if level == nil then
-        print("[Learnable] Usage: /learn[able] [level|next [range]]")
+        print(C_HEADER .. "[Learnable] Usage: /learn[able] [level|next [range]]" .. C_RESET)
         return
     end
 
@@ -177,9 +185,9 @@ function PrintSpellRange(startLevel, endLevel, isRetry)
                 hasPendingSpellData = true
             end
             if spellRank and spellRank ~= "" then
-                table.insert(spellLines, level .. " - " .. spellName .. " (" .. spellRank .. ")")
+                table.insert(spellLines, BULLET .. " " .. C_LEVEL .. level .. C_RESET .. " - " .. C_NAME .. spellName .. C_RESET .. " " .. C_RANK .. "(" .. spellRank .. ")" .. C_RESET)
             else
-                table.insert(spellLines, level .. " - " .. spellName)
+                table.insert(spellLines, BULLET .. " " .. C_LEVEL .. level .. C_RESET .. " - " .. C_NAME .. spellName .. C_RESET)
             end
         end
     end
@@ -195,14 +203,14 @@ function PrintSpellRange(startLevel, endLevel, isRetry)
 
     if #spellLines > 0 then
         print(" ")
-        print("[Learnable] Spells available to train at levels " .. startLevel .. "-" .. endLevel .. ":")
-        print("====================")
+        print(C_HEADER .. "[Learnable] Spells available to train at levels " .. startLevel .. "-" .. endLevel .. ":" .. C_RESET)
+        print(DIVIDER)
         for i = 1, #spellLines, 1 do
             print(spellLines[i])
         end
-        print("====================")
+        print(DIVIDER)
     else
-        print("No new learnable spells for a ", playerClass, " between levels ", startLevel, "-", endLevel, ".")
+        print(C_HEADER .. "No new learnable spells for a " .. playerClass .. " between levels " .. startLevel .. "-" .. endLevel .. "." .. C_RESET)
     end
 end
 
@@ -223,9 +231,9 @@ function PrintSpells(level, isRetry)
                 hasPendingSpellData = true
             end
             if spellRank and spellRank ~= "" then
-                table.insert(spellLines, "- " .. spellName .. " (" .. spellRank .. ")")
+                table.insert(spellLines, BULLET .. " " .. C_NAME .. spellName .. C_RESET .. " " .. C_RANK .. "(" .. spellRank .. ")" .. C_RESET)
             else
-                table.insert(spellLines, "- " .. spellName)
+                table.insert(spellLines, BULLET .. " " .. C_NAME .. spellName .. C_RESET)
             end
         end
         if hasPendingSpellData and not isRetry and not pendingRankRetryByLevel[level] then
@@ -237,14 +245,14 @@ function PrintSpells(level, isRetry)
             return
         end
         print(" ")
-        print("[Learnable] Spells available to train at level " .. level .. ":")
-        print("====================")
+        print(C_HEADER .. "[Learnable] Spells available to train at level " .. level .. ":" .. C_RESET)
+        print(DIVIDER)
         for i = 1, #spellLines, 1 do
             print(spellLines[i])
         end
-        print("====================")
+        print(DIVIDER)
     else
-        print("No new learnable spells for a ", playerClass, " at level ", level, ".")
+        print(C_HEADER .. "No new learnable spells for a " .. playerClass .. " at level " .. level .. "." .. C_RESET)
     end
 end
 
