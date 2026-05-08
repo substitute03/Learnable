@@ -1,4 +1,5 @@
 SLASH_LEARNABLE1 = "/learnable"
+SLASH_LEARNABLE2 = "/learn"
 
 SlashCmdList["LEARNABLE"] = function(arg1)
     local level = tonumber(arg1)
