@@ -1,10 +1,6 @@
-Learnable = Learnable or {}
+local Addon = Learnable
 
-SLASH_LEARNABLE1 = "/learnable"
-SLASH_LEARNABLE2 = "/learn"
-
-SlashCmdList["LEARNABLE"] = function(arg1)
-    local Addon = Learnable
+function Addon.HandleSlashCommand(arg1)
     local input = (arg1 or ""):lower():match("^%s*(.-)%s*$")
     if input == "able" then
         input = ""
@@ -15,15 +11,14 @@ SlashCmdList["LEARNABLE"] = function(arg1)
         end
     end
     local playerLevel = UnitLevel("player")
-    local maxLevel = Addon.MAX_LEVEL or 70
 
     if input == "" then
-        Addon.ShowSpellRange(playerLevel, maxLevel)
+        Addon.ShowSpellRange(playerLevel, Addon.MAX_LEVEL)
         return
     end
 
     if input == "all" then
-        Addon.ShowSpellRange(1, maxLevel)
+        Addon.ShowSpellRange(1, Addon.MAX_LEVEL)
         return
     end
 
@@ -35,9 +30,9 @@ SlashCmdList["LEARNABLE"] = function(arg1)
         end
 
         local startLevel = playerLevel + 1
-        local endLevel = math.min(maxLevel, playerLevel + levelsToShow)
-        if startLevel > maxLevel then
-            Addon.ShowLevel(maxLevel)
+        local endLevel = math.min(Addon.MAX_LEVEL, playerLevel + levelsToShow)
+        if startLevel > Addon.MAX_LEVEL then
+            Addon.ShowLevel(Addon.MAX_LEVEL)
             return
         end
 

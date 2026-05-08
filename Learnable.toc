@@ -9,3 +9,9 @@
 
 Abilities.lua
 Learnable.lua
+Core\Constants.lua
+Core\Query.lua
+Core\Controller.lua
+UI\Window.lua
+Commands.lua
+Events.lua

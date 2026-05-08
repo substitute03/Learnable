@@ -31,6 +31,7 @@
         "SetDesaturation",
         "ColorPickerFrame",
         "OKAY",
-        "NOT_BOUND"
+        "NOT_BOUND",
+        "CLASS_ICON_TCOORDS"
     ]
 }
