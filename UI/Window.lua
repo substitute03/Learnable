@@ -195,6 +195,8 @@ end
 function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
     Addon.EnsureWindow()
 
+    local currentLevel = UnitLevel("player")
+
     local className, classToken = GetClassHeader()
     local texture, left, right, top, bottom = GetClassIconInfo(classToken)
     if texture then
@@ -233,8 +235,10 @@ function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
         row.levelText:SetWidth(40)
         row.levelText:SetJustifyH("CENTER")
         row.levelText:SetText("")
+        row.levelText:SetTextColor(1, 1, 1, 1)
         row.text:ClearAllPoints()
         row.text:SetPoint("LEFT", 82, 0)
+        row.text:SetTextColor(1, 1, 1, 1)
         row.text:SetText("No learnable spells in this range.")
         row:Show()
         scrollChild:SetHeight(54)
@@ -264,6 +268,16 @@ function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
         else
             row.text:SetText(entry.name)
         end
+        local ar, ag, ab, aa = 1, 1, 1, 1
+        local lr, lg, lb, la = 1, 1, 1, 1
+        if entry.level > currentLevel then
+            ar, ag, ab = 1, 0.25, 0.25
+            lr, lg, lb = ar, ag, ab
+        elseif entry.level == currentLevel then
+            lr, lg, lb, la = 1, 0.82, 0, 1
+        end
+        row.levelText:SetTextColor(lr, lg, lb, la)
+        row.text:SetTextColor(ar, ag, ab, aa)
         row:Show()
     end
 
