@@ -1,12 +1,45 @@
 SLASH_LEARNABLE1 = "/learnable"
 SLASH_LEARNABLE2 = "/learn"
 local pendingRankRetryByLevel = {}
+local pendingRankRetryByRange = {}
 
 SlashCmdList["LEARNABLE"] = function(arg1)
-    local level = tonumber(arg1)
-    if level == nil then
-        level = UnitLevel("player")
+    local input = (arg1 or ""):lower():match("^%s*(.-)%s*$")
+    local playerLevel = UnitLevel("player")
+
+    if input == "" then
+        PrintSpells(playerLevel)
+        return
     end
+
+    local nextRange = input:match("^next%s+(%d+)$")
+    if input == "next" or nextRange then
+        local levelsToShow = tonumber(nextRange) or 1
+        if levelsToShow < 1 then
+            levelsToShow = 1
+        end
+
+        local startLevel = playerLevel + 1
+        local endLevel = math.min(70, playerLevel + levelsToShow)
+        if startLevel > 70 then
+            print("[Learnable] You are already at max level.")
+            return
+        end
+
+        if levelsToShow == 1 then
+            PrintSpells(startLevel)
+        else
+            PrintSpellRange(startLevel, endLevel)
+        end
+        return
+    end
+
+    local level = tonumber(input)
+    if level == nil then
+        print("[Learnable] Usage: /learn[able] [level|next [range]]")
+        return
+    end
+
     PrintSpells(level)
 end
 
@@ -15,7 +48,7 @@ function OnLevelUpEventHandler(self, event, ...)
     PrintSpells(playerLevel)
 end
 
-function PrintSpells(level, isRetry)
+function GetLearnableSpellIdsForLevel(level)
     local _, playerClass = UnitClass("player") -- The 2nd return value is the locale-independent, uppercase class name of the current player.
     local _, playerRace = UnitRace("player") -- The 2nd return value is the locale-independent, uppercase race name of the current player.
     local _, playerFaction = UnitFactionGroup("player")
@@ -123,6 +156,59 @@ function PrintSpells(level, isRetry)
             table.insert(learnableSpellsIds, spellId)
         end
     end
+    return learnableSpellsIds
+end
+
+function PrintSpellRange(startLevel, endLevel, isRetry)
+    local _, playerClass = UnitClass("player")
+    local spellLines = {}
+    local hasPendingSpellData = false
+    local rangeKey = startLevel .. "-" .. endLevel
+
+    for level = startLevel, endLevel, 1 do
+        local learnableSpellsIds = GetLearnableSpellIdsForLevel(level)
+        for i = 1, #learnableSpellsIds, 1 do
+            local spellId = learnableSpellsIds[i]
+            local spellInfo = C_Spell.GetSpellInfo(spellId)
+            local spellName = spellInfo and spellInfo.name
+            local spellRank = C_Spell.GetSpellSubtext and C_Spell.GetSpellSubtext(spellId) or nil
+            if (spellRank == nil or spellRank == "") and C_Spell.RequestLoadSpellData then
+                C_Spell.RequestLoadSpellData(spellId)
+                hasPendingSpellData = true
+            end
+            if spellRank and spellRank ~= "" then
+                table.insert(spellLines, level .. " - " .. spellName .. " (" .. spellRank .. ")")
+            else
+                table.insert(spellLines, level .. " - " .. spellName)
+            end
+        end
+    end
+
+    if hasPendingSpellData and not isRetry and not pendingRankRetryByRange[rangeKey] then
+        pendingRankRetryByRange[rangeKey] = true
+        C_Timer.After(0.2, function()
+            pendingRankRetryByRange[rangeKey] = nil
+            PrintSpellRange(startLevel, endLevel, true)
+        end)
+        return
+    end
+
+    if #spellLines > 0 then
+        print(" ")
+        print("[Learnable] Spells available to train at levels " .. startLevel .. "-" .. endLevel .. ":")
+        print("====================")
+        for i = 1, #spellLines, 1 do
+            print(spellLines[i])
+        end
+        print("====================")
+    else
+        print("No new learnable spells for a ", playerClass, " between levels ", startLevel, "-", endLevel, ".")
+    end
+end
+
+function PrintSpells(level, isRetry)
+    local _, playerClass = UnitClass("player")
+    local learnableSpellsIds = GetLearnableSpellIdsForLevel(level)
 
     if #learnableSpellsIds > 0 then
         local spellLines = {}
@@ -159,10 +245,6 @@ function PrintSpells(level, isRetry)
         print("====================")
     else
         print("No new learnable spells for a ", playerClass, " at level ", level, ".")
-    end
-
-    for i = 1, #learnableSpellsIds, 1 do
-        table.remove(learnableSpellsIds, i)
     end
 end
 
