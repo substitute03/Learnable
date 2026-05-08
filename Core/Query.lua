@@ -129,7 +129,7 @@ function Addon.BuildSpellEntries(startLevel, endLevel)
         local learnableSpellsIds = Addon.GetLearnableSpellIdsForLevel(level)
         for i = 1, #learnableSpellsIds, 1 do
             local spellId = learnableSpellsIds[i]
-            local isKnown = IsSpellKnown and IsSpellKnown(spellId)
+            local isKnown = Addon.IsSpellEffectivelyKnown(spellId)
             if not (Addon.showUnlearnedOnly and isKnown) then
                 local spellInfo = C_Spell.GetSpellInfo(spellId)
                 local spellName = (spellInfo and spellInfo.name) or ("Spell ID " .. spellId)
