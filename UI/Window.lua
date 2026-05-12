@@ -6,10 +6,27 @@ local classHeaderText
 local classIconTexture
 local startLevelInput
 local endLevelInput
+local nameFilterInput
 local unlearnedOnlyCheck
 local scrollChild
 local headerRow
 local rows = {}
+
+local function ReRenderCurrentRange()
+    local startLevel = tonumber(startLevelInput:GetText()) or UnitLevel("player")
+    local endLevel = tonumber(endLevelInput:GetText()) or startLevel
+    startLevel = Addon.ClampLevel(startLevel)
+    endLevel = Addon.ClampLevel(endLevel)
+    if startLevel > endLevel then
+        startLevel, endLevel = endLevel, startLevel
+    end
+    Addon.ShowSpellRange(startLevel, endLevel)
+end
+
+local function ApplyNameFilter()
+    Addon.spellNameFilter = (nameFilterInput and nameFilterInput:GetText()) or ""
+    ReRenderCurrentRange()
+end
 
 local function GetClassHeader()
     local localizedClassName, classToken = UnitClass("player")
@@ -132,16 +149,7 @@ function Addon.EnsureWindow()
     searchButton:SetSize(80, 24)
     searchButton:SetPoint("LEFT", endLevelInput, "RIGHT", 14, 0)
     searchButton:SetText("Search")
-    searchButton:SetScript("OnClick", function()
-        local startLevel = tonumber(startLevelInput:GetText()) or UnitLevel("player")
-        local endLevel = tonumber(endLevelInput:GetText()) or startLevel
-        startLevel = Addon.ClampLevel(startLevel)
-        endLevel = Addon.ClampLevel(endLevel)
-        if startLevel > endLevel then
-            startLevel, endLevel = endLevel, startLevel
-        end
-        Addon.ShowSpellRange(startLevel, endLevel)
-    end)
+    searchButton:SetScript("OnClick", ReRenderCurrentRange)
 
     local showAllButton = CreateFrame("Button", nil, learnableWindow, "UIPanelButtonTemplate")
     showAllButton:SetSize(80, 24)
@@ -157,18 +165,53 @@ function Addon.EnsureWindow()
     unlearnedOnlyCheck.text:SetText("Unlearned only")
     unlearnedOnlyCheck:SetScript("OnClick", function(self)
         Addon.showUnlearnedOnly = self:GetChecked() and true or false
-        local startLevel = tonumber(startLevelInput:GetText()) or UnitLevel("player")
-        local endLevel = tonumber(endLevelInput:GetText()) or startLevel
-        startLevel = Addon.ClampLevel(startLevel)
-        endLevel = Addon.ClampLevel(endLevel)
-        if startLevel > endLevel then
-            startLevel, endLevel = endLevel, startLevel
-        end
-        Addon.ShowSpellRange(startLevel, endLevel)
+        ReRenderCurrentRange()
+    end)
+
+    startLevelInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        ReRenderCurrentRange()
+    end)
+    endLevelInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        ReRenderCurrentRange()
+    end)
+
+    local filterLabel = learnableWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    filterLabel:SetPoint("TOPLEFT", 18, -118)
+    filterLabel:SetText("Filter:")
+
+    nameFilterInput = CreateFrame("EditBox", nil, learnableWindow, "InputBoxTemplate")
+    nameFilterInput:SetSize(260, 24)
+    nameFilterInput:SetPoint("LEFT", filterLabel, "RIGHT", 8, 0)
+    nameFilterInput:SetAutoFocus(false)
+    nameFilterInput:SetMaxLetters(64)
+    nameFilterInput:SetText(Addon.spellNameFilter or "")
+    nameFilterInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        ApplyNameFilter()
+    end)
+    nameFilterInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+
+    local filterButton = CreateFrame("Button", nil, learnableWindow, "UIPanelButtonTemplate")
+    filterButton:SetSize(80, 24)
+    filterButton:SetPoint("LEFT", nameFilterInput, "RIGHT", 14, 0)
+    filterButton:SetText("Search")
+    filterButton:SetScript("OnClick", ApplyNameFilter)
+
+    local clearFilterButton = CreateFrame("Button", nil, learnableWindow, "UIPanelButtonTemplate")
+    clearFilterButton:SetSize(60, 24)
+    clearFilterButton:SetPoint("LEFT", filterButton, "RIGHT", 8, 0)
+    clearFilterButton:SetText("Clear")
+    clearFilterButton:SetScript("OnClick", function()
+        nameFilterInput:SetText("")
+        ApplyNameFilter()
     end)
 
     local scrollFrame = CreateFrame("ScrollFrame", nil, learnableWindow, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", 18, -124)
+    scrollFrame:SetPoint("TOPLEFT", 18, -152)
     scrollFrame:SetPoint("BOTTOMRIGHT", -36, 16)
 
     scrollChild = CreateFrame("Frame", nil, scrollFrame)
@@ -208,16 +251,37 @@ function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
     end
     classHeaderText:SetText(className or "Unknown")
 
-    if startLevel == endLevel then
-        queryHeaderText:SetText("Results for level " .. startLevel)
-    else
-        queryHeaderText:SetText("Results for levels " .. startLevel .. "-" .. endLevel)
+    local filterText = Addon.spellNameFilter
+    if filterText and filterText ~= "" then
+        local lowered = filterText:lower()
+        local filtered = {}
+        for i = 1, #spellEntries, 1 do
+            local entry = spellEntries[i]
+            if entry.name and entry.name:lower():find(lowered, 1, true) then
+                table.insert(filtered, entry)
+            end
+        end
+        spellEntries = filtered
     end
+
+    local rangeLabel
+    if startLevel == endLevel then
+        rangeLabel = "Results for level " .. startLevel
+    else
+        rangeLabel = "Results for levels " .. startLevel .. "-" .. endLevel
+    end
+    if filterText and filterText ~= "" then
+        rangeLabel = rangeLabel .. " matching '" .. filterText .. "'"
+    end
+    queryHeaderText:SetText(rangeLabel)
 
     startLevelInput:SetText(tostring(startLevel))
     endLevelInput:SetText(tostring(endLevel))
     if unlearnedOnlyCheck then
         unlearnedOnlyCheck:SetChecked(Addon.showUnlearnedOnly)
+    end
+    if nameFilterInput and nameFilterInput:GetText() ~= (filterText or "") then
+        nameFilterInput:SetText(filterText or "")
     end
 
     for i = 1, #rows, 1 do
@@ -239,7 +303,11 @@ function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
         row.text:ClearAllPoints()
         row.text:SetPoint("LEFT", 82, 0)
         row.text:SetTextColor(1, 1, 1, 1)
-        row.text:SetText("No learnable spells in this range.")
+        if filterText and filterText ~= "" then
+            row.text:SetText("No learnable spells in this range matching '" .. filterText .. "'.")
+        else
+            row.text:SetText("No learnable spells in this range.")
+        end
         row:Show()
         scrollChild:SetHeight(54)
         learnableWindow:Show()
