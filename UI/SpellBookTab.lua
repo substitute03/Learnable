@@ -192,6 +192,35 @@ local function PlayTabClickSound()
     end
 end
 
+local function CloseSpellBook()
+    if not SpellBookFrame or not SpellBookFrame:IsShown() then
+        return
+    end
+    if HideUIPanel then
+        HideUIPanel(SpellBookFrame)
+    else
+        SpellBookFrame:Hide()
+    end
+end
+
+local function PreventTabSelectionHighlight(tab)
+    tab:SetChecked(false)
+    local checkedTexture = tab.GetCheckedTexture and tab:GetCheckedTexture()
+    if checkedTexture then
+        checkedTexture:SetAlpha(0)
+    end
+    local disabledCheckedTexture = tab.GetDisabledCheckedTexture and tab:GetDisabledCheckedTexture()
+    if disabledCheckedTexture then
+        disabledCheckedTexture:SetAlpha(0)
+    end
+    tab:SetScript("OnMouseDown", function(self)
+        self:SetChecked(false)
+    end)
+    tab:SetScript("OnMouseUp", function(self)
+        self:SetChecked(false)
+    end)
+end
+
 local function CreateLearnableSpellBookTab()
     if learnableTab or not SpellBookFrame then
         return
@@ -201,14 +230,17 @@ local function CreateLearnableSpellBookTab()
     tab:SetFrameStrata(SpellBookFrame:GetFrameStrata())
     tab:SetFrameLevel(SpellBookFrame:GetFrameLevel() + 2)
     ApplyClassIconToTab(tab)
+    PreventTabSelectionHighlight(tab)
 
-    tab:SetScript("OnClick", function()
+    tab:SetScript("OnClick", function(self)
         PlayTabClickSound()
+        CloseSpellBook()
         if Addon.IsLearnableWindowShown() then
             Addon.HideLearnableWindow()
         else
             Addon.OpenLearnable()
         end
+        self:SetChecked(false)
     end)
     tab:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
