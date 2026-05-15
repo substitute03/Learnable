@@ -124,9 +124,11 @@ end
 function Addon.BuildSpellEntries(startLevel, endLevel)
     local spellEntries = {}
     local hasPendingSpellData = false
+    local _, classToken = UnitClass("player")
 
     for level = startLevel, endLevel, 1 do
         local learnableSpellsIds = Addon.GetLearnableSpellIdsForLevel(level)
+        Addon.AppendQuestExtraSpellIds(learnableSpellsIds, classToken, level)
         for i = 1, #learnableSpellsIds, 1 do
             local spellId = learnableSpellsIds[i]
             local isKnown = Addon.IsSpellEffectivelyKnown(spellId)
@@ -145,6 +147,7 @@ function Addon.BuildSpellEntries(startLevel, endLevel)
                     name = spellName,
                     rank = spellRank,
                     icon = spellIcon,
+                    source = Addon.GetSpellSource(spellId),
                 })
             end
         end

@@ -11,6 +11,7 @@ Abilities.lua
 Learnable.lua
 Core\Constants.lua
 Core\SpellRankChains.lua
+Core\SpellSources.lua
 Core\Query.lua
 Core\Controller.lua
 UI\Window.lua
