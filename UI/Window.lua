@@ -275,6 +275,16 @@ function Addon.EnsureWindow()
     headerRow.spellText:SetText("Ability")
 end
 
+function Addon.IsLearnableWindowShown()
+    return learnableWindow and learnableWindow:IsShown()
+end
+
+function Addon.HideLearnableWindow()
+    if learnableWindow then
+        learnableWindow:Hide()
+    end
+end
+
 function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
     Addon.EnsureWindow()
 

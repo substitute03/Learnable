@@ -15,4 +15,5 @@ Core\SpellSources.lua
 Core\Query.lua
 Core\Controller.lua
 UI\Window.lua
+UI\SpellBookTab.lua
 Commands.lua

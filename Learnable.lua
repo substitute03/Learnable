@@ -1,10 +1,8 @@
 Learnable = Learnable or {}
 
-SLASH_LEARNABLE1 = "/learnable"
-SLASH_LEARNABLE2 = "/learn"
+local Addon = Learnable
 
-SlashCmdList["LEARNABLE"] = function(arg1)
-    local Addon = Learnable
+function Addon.OpenLearnable(arg1)
     local input = (arg1 or ""):lower():match("^%s*(.-)%s*$")
     if input == "able" then
         input = ""
@@ -57,4 +55,11 @@ SlashCmdList["LEARNABLE"] = function(arg1)
     end
 
     Addon.ShowLevel(level)
+end
+
+SLASH_LEARNABLE1 = "/learnable"
+SLASH_LEARNABLE2 = "/learn"
+
+SlashCmdList["LEARNABLE"] = function(arg1)
+    Addon.OpenLearnable(arg1)
 end
