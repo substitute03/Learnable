@@ -32,8 +32,43 @@ local function ReRenderCurrentRange()
 end
 
 local function ApplyNameFilter()
-    Addon.spellNameFilter = (nameFilterInput and nameFilterInput:GetText()) or ""
+    local text = (nameFilterInput and nameFilterInput:GetText()) or ""
+    Addon.spellNameFilter = text:match("^%s*(.-)%s*$") or ""
     ReRenderCurrentRange()
+end
+
+local function GetAbilityColumnText(entry)
+    local name = entry.name or ""
+    if entry.rank and entry.rank ~= "" then
+        return name .. " (" .. entry.rank .. ")"
+    end
+    return name
+end
+
+local function EntryMatchesFilter(entry, filterLower)
+    if filterLower == "" then
+        return true
+    end
+    local function contains(value)
+        if value == nil or value == "" then
+            return false
+        end
+        return string.find(string.lower(tostring(value)), filterLower, 1, true) ~= nil
+    end
+    -- Level column: exact level only (e.g. "10" -> level 10, not 100 or spell IDs)
+    local filterLevel = tonumber(filterLower)
+    if filterLevel and entry.level == filterLevel then
+        return true
+    end
+    -- Source column
+    if contains(entry.source) then
+        return true
+    end
+    -- Ability column: same text as shown in the row (name + rank subtext)
+    if contains(GetAbilityColumnText(entry)) then
+        return true
+    end
+    return false
 end
 
 local function GetClassHeader()
@@ -258,11 +293,11 @@ function Addon.RenderSpellResults(startLevel, endLevel, spellEntries)
 
     local filterText = Addon.spellNameFilter
     if filterText and filterText ~= "" then
-        local lowered = filterText:lower()
+        local lowered = filterText:lower():match("^%s*(.-)%s*$") or ""
         local filtered = {}
         for i = 1, #spellEntries, 1 do
             local entry = spellEntries[i]
-            if entry.name and entry.name:lower():find(lowered, 1, true) then
+            if EntryMatchesFilter(entry, lowered) then
                 table.insert(filtered, entry)
             end
         end
